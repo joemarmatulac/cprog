@@ -143,13 +143,28 @@ int main(int argc, char *argv[]){
 			 *
 			 * e.g. perform some action repond to client etc.
 			 */
-			 write(slaveSocket, MESSAGE, strlen(MESSAGE));
-			 close(slaveSocket);
-			 exit(0);
+			
+			/* Added to test */
+			 char chatmessage[250];
+			 printf("Enter your message\n");
+			
+			 if(NULL == chatmessage || 0 == strlen(chatmessage)){
+			  	 strncpy(chatmessage, MESSAGE, 250);
+			 }
+			
+			 scanf("%[^\t\n]s", &chatmessage);
+			 write(slaveSocket, chatmessage, strlen(chatmessage));
+			 
+			 /* 
+			  * write(slaveSocket, MESSAGE, strlen(MESSAGE));
+			  * close(slaveSocket);
+			  * exit(0);
+			  */
+			
 		/* Parent process */
 		default:
 			close(slaveSocket);
-	}
+	 }
 	}
 	return 0;
 }

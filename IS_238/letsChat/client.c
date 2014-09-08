@@ -64,6 +64,10 @@ int main(int argc, char *argv[]){
 	if(-1 == status){
 		perror("read()"); 
 	}
-	close(clientSocket);
+	
+	/*
+	 * close(clientSocket);
+	 */
+	
 	return 0;
 } 
