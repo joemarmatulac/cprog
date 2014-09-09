@@ -7,7 +7,6 @@
  *
  */
 
-#include "showmyip.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -17,20 +16,55 @@
 #include <netinet/in.h>
 int main(int argc, char *argv[])
 {
+	/*
+	 * Prepare socket address structures
+	 */
     struct addrinfo hints, *res, *p;
+	
+	/*
+	 * Status
+	 */
     int status;
+	
+	/* 
+	 * Will hold the IPv6 String
+	 */
     char ipstr[INET6_ADDRSTRLEN];
-    if (argc != 2) {
+    
+	/*
+	 * Check if argc is the application compile object plust hostname
+	 * argv[0] = showmyip, argv[1] = www.google.com
+	 */
+	if (argc != 2) {
         fprintf(stderr,"usage: showip hostname\n");
         return 1;
 	}
+	
+	/*
+	 * Make sure the stack is empty
+	 */
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_UNSPEC; // AF_INET or AF_INET6 to force version
+	
+	/*
+	 * AF_INET or AF_INET6 to force version
+	 * This doesn't care if its IPv4 or IPv6
+	 */
+    hints.ai_family = AF_UNSPEC;
+	
+	/*
+	 * TCP Stream Sockets
+	 */
     hints.ai_socktype = SOCK_STREAM;
+	
+	/*
+	 * getaddrinfo(argv[1], NULL, &hints, &res)
+	 * res is now pointing to one of more struct
+	 */
     if ((status = getaddrinfo(argv[1], NULL, &hints, &res)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
         return 2;
 	}
+	
     printf("IP addresses for %s:\n\n", argv[1]);
     for(p = res;p != NULL; p = p->ai_next) {
         void *addr;
