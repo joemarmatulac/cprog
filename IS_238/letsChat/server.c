@@ -153,7 +153,8 @@ int main(int argc, char *argv[]){
 			 }
 			
 			 scanf("%[^\t\n]s", &chatmessage);
-			 write(slaveSocket, chatmessage, strlen(chatmessage));
+			 send(slaveSocket, chatmessage, strlen(chatmessage), 0);
+			 //write(slaveSocket, chatmessage, strlen(chatmessage));
 			 
 			 /* 
 			  * write(slaveSocket, MESSAGE, strlen(MESSAGE));

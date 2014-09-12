@@ -58,9 +58,12 @@ int main(int argc, char *argv[]){
 	 * e.g. receive message from server, respond etc.
 	 */
 
-	while(0 < (status =  read(clientSocket, buffer, sizeof(buffer)-1))){
-		printf("%d: %s", status, buffer);
-	}
+	int byte_count = recv(clientSocket, buffer, sizeof(buffer)-1, 0);
+	printf("recv()'d %d bytes of data in buf\n", byte_count);
+	printf("recv()'d %s bytes of data in buf\n", buffer);
+	//while(0 < (status =  read(clientSocket, buffer, sizeof(buffer)-1))){
+	//	printf("%d: %s", status, buffer);
+	//}
 	if(-1 == status){
 		perror("read()"); 
 	}
