@@ -61,14 +61,16 @@ int main(int argc, char *argv[]){
 	 * e.g. receive message from server, respond etc.
 	 */
     for (;;) {
+        /*
+         * Need to add a loop that will prompt for message once carriage return is received by fgets
+         */
         printf("You:  ");
         fgets(messageTobeSent,BUFF_SIZE-1,stdin);
         if ((send(clientSocket,messageTobeSent, strlen(messageTobeSent),0))== -1) {
             fprintf(stderr, "Failure Sending Message\n");
             close(clientSocket);
             exit(1);
-        }
-        else {
+        } else{
             /*
              *printf("Client:Message being sent: %s\n",messageFromServer);
              */
@@ -79,7 +81,7 @@ int main(int argc, char *argv[]){
                 break;
             }
             messageFromServer[status] = '\0';
-            printf("Server: %s",messageFromServer);
+            printf("\nServer: %s", messageFromServer);
         }
     }
 

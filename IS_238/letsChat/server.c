@@ -154,6 +154,9 @@ int main(int argc, char *argv[]){
 			 */
 
             for(;;){
+                /*
+                 * Need to add a loop that will prompt for message once carriage return is received by fgets
+                 */
                 if ((received = recv(slaveSocket,messagefromClient, BUFF_SIZE, 0)) == -1) {
                     perror("Receiving of message from client error");
                     exit(1);
@@ -162,7 +165,7 @@ int main(int argc, char *argv[]){
                     break;
                 }
                 messagefromClient[received] = '\0';
-                printf("Client: %s", messagefromClient);
+                printf("\nClient: %s", messagefromClient);
                 
                 /* 
                  *This is for sending of message.
