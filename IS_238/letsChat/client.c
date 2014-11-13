@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
 	 * e.g. receive message from server, respond etc.
 	 */
     for (;;) {
-        printf("Client: Enter Data for Server:\n");
+        printf("You:  ");
         fgets(messageTobeSent,BUFF_SIZE-1,stdin);
         if ((send(clientSocket,messageTobeSent, strlen(messageTobeSent),0))== -1) {
             fprintf(stderr, "Failure Sending Message\n");
@@ -69,17 +69,17 @@ int main(int argc, char *argv[]){
             exit(1);
         }
         else {
-            printf("Client:Message being sent: %s\n",messageFromServer);
+            /*
+             *printf("Client:Message being sent: %s\n",messageFromServer);
+             */
             status = recv(clientSocket, messageFromServer, sizeof(messageFromServer),0);
-            if ( status <= 0 )
-            {
+            if ( status <= 0 ){
                 printf("Either Connection Closed or Error\n");
                 //Break from the While
                 break;
             }
-            
             messageFromServer[status] = '\0';
-            printf("Client:Message Received From Server -  %s\n",messageFromServer);
+            printf("Server: %s",messageFromServer);
         }
     }
 

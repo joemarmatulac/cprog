@@ -162,17 +162,21 @@ int main(int argc, char *argv[]){
                     break;
                 }
                 messagefromClient[received] = '\0';
-                printf("Server:Msg Received %s\n", messagefromClient);
+                printf("Client: %s", messagefromClient);
                 
                 /* 
                  *This is for sending of message.
                  */
+                printf("You: ");
+                fgets(messageforClient,BUFF_SIZE-1,stdin);
                 if ((send(slaveSocket, messageforClient, strlen(messageforClient),0))== -1){
                     fprintf(stderr, "Failure Sending Message\n");
                     //close(slaveSocket);
                     break;
                 }
-                printf("Server:Msg being sent: %s\nNumber of bytes sent: %d\n", messageforClient, strlen(messageforClient   ));
+                /*
+                 *printf("Server:Msg being sent: %s\nNumber of bytes sent: %d\n", messageforClient, strlen(messageforClient   ));
+                 */
             }
 			
 			 /*
