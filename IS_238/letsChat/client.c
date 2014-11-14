@@ -55,20 +55,20 @@ int main(int argc, char *argv[]){
 	if(-1 == status){
 		perror("connect");
 		exit(1);
-	}
+    }else{
+        printf("Connected to server\n");
+        printf("Chat started....\n\n");
+        printf("You : ");
+    }
 
-	/*
-   	 * Client application specific code goes here
-	 *
-	 * e.g. receive message from server, respond etc.
-	 */
     /*
-     * Thread Idenfier.
+     * Thread Listener for incoming messages from server.
      */
     pthread_t pthreadId;
     pthread_create(&pthreadId,NULL,receivedMessagethreadListener,clientSocket);
+
     /*
-     * Send message to server.
+     * Listener of message input from client
      */
     for(;;){
         fgets(messageTobeSent,BUFF_SIZE-1,stdin);
@@ -80,6 +80,9 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 
+/*
+ * Thread that listens to incoming message from server.
+ */
 void *receivedMessagethreadListener(int *arg){
     char messagefromServer[BUFF_SIZE]="";
     int status = 0;
@@ -90,6 +93,6 @@ void *receivedMessagethreadListener(int *arg){
             break;
         }
         messagefromServer[status] = '\0';
-        printf("\nServer: %s", messagefromServer);
+        printf("\nServer : %s", messagefromServer);
     }
 }

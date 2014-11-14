@@ -28,6 +28,9 @@ int main(int argc, char *argv[]){
  	}
 	
 	port = atoi(argv[1]);
+    /*
+     * Get the file descriptor
+     */
 	serverSocket=socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if(-1==serverSocket){
 		perror("socket");
@@ -84,21 +87,25 @@ int main(int argc, char *argv[]){
 	(void)memcpy(&serverName.sin_addr,hostPtr->h_addr,hostPtr->h_length);
 
 	/*
-	 * to allow server be contactable on any of its
-	 * IP addresses, uncomment the followng ling of code
-	 *	
-	 * serverName.sin_addr.s_addr = htonl(INADR_ANY);
+	 * Allowed server be contactable on any of its IP addresses.
 	 */
+	 serverName.sin_addr.s_addr = htonl(INADR_ANY);
 
 	serverName.sin_family=AF_INET;
-	serverName.sin_port=htons(port); /* network-order*/
+	serverName.sin_port=htons(port);
 
+    /*
+     * Associate socket with an IP address and port number.
+     */
 	status = bind(serverSocket, (struct sockaddr*)&serverName, sizeof(serverName));	
 	if(-1 == status){
 		perror("bind");
 		exit(1);
 	}
 
+    /*
+     * Listen to incoming socket connections.
+     */
 	status=listen(serverSocket, BACK_LOG);
 	if(-1 == status){
 		perror("listen()");
@@ -109,8 +116,14 @@ int main(int argc, char *argv[]){
 		struct sockaddr_in clientName={0};
 		int slaveSocket, clientLength=sizeof(clientName);
 
+        /*
+         * Empty struct addrinfo
+         */
 		(void)memset(&clientName,0,sizeof(clientName));
 		
+        /*
+         * Get pending connection
+         */
 		slaveSocket = accept(serverSocket,(struct sockaddr*)&clientName,&clientLength);
 		if(-1 == slaveSocket){
 			perror("accept()");
@@ -136,16 +149,21 @@ int main(int argc, char *argv[]){
 				*/
 				char ipv4[INET_ADDRSTRLEN];
 				inet_ntop(AF_INET, &(clientName.sin_addr),ipv4, INET_ADDRSTRLEN);
-				printf("Connection request from %s\n", ipv4);
+				printf("Chat request from %s\n", ipv4);
+                printf("Chat started ....\n\n");
+                printf("You : ");
+
 			}
 
-			/*
-			 * Server application specific code goes here,
-			 *
-			 * e.g. perform some action repond to client etc.
-			 */
+            /*
+             * Thread Listener for incoming messages from client.
+             */
             pthread_t pthreadId;
             pthread_create(&pthreadId,NULL,receivedMessagethreadListener,slaveSocket);
+            
+            /*
+             * Listener of message input from server.
+             */
             for(;;){
                 fgets(messageforClient,BUFF_SIZE-1,stdin);
                 if ((send(slaveSocket, messageforClient, strlen(messageforClient),0))== -1){
@@ -174,6 +192,9 @@ int _GetHostName(char *buffer, int length){
 	return (status);
 }
 
+/*
+ * Thread that listens to incoming message from client.
+ */
 void *receivedMessagethreadListener(int *arg){
     char messagefromClient[BUFF_SIZE]="";
     int status = 0;
@@ -184,6 +205,6 @@ void *receivedMessagethreadListener(int *arg){
             break;
         }
         messagefromClient[status] = '\0';
-        printf("\nServer: %s", messagefromClient);
+        printf("\nClient : %s", messagefromClient);
     }
 }
