@@ -81,15 +81,15 @@ int main(int argc, char *argv[]){
 }
 
 void *receivedMessagethreadListener(int *arg){
-    char messageFromServer[BUFF_SIZE]="";
+    char messagefromServer[BUFF_SIZE]="";
     int status = 0;
     for (;;) {
-        status = recv((int)arg, messageFromServer, sizeof(messageFromServer),0);
+        status = recv((int)arg, messagefromServer, sizeof(messagefromServer),0);
         if ( status <= 0 ){
             printf("Either Connection Closed or Error\n");
             break;
         }
-        messageFromServer[status] = '\0';
-        printf("\nServer: %s", messageFromServer);
+        messagefromServer[status] = '\0';
+        printf("\nServer: %s", messagefromServer);
     }
 }

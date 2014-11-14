@@ -10,24 +10,16 @@
 #include <unistd.h>
 
 #define BUFF_SIZE 1024
-
-/*
- * prototypes
- */
-int _GetHostName(char *buffer, int length);
-
-/*
- * constants 
- */
-const char MESSAGE[] = "Hello, World!\n";
 const int BACK_LOG = 5;
+
+int _GetHostName(char *buffer, int length);
+void *receivedMessagethreadListener(int *arg);
 
 int main(int argc, char *argv[]){
 	int serverSocket=0, on=0, port=0, status=0, childPid=0, received=0;
 	struct hostent *hostPtr=NULL;
  	char hostname[80]="";
  	struct sockaddr_in serverName = {0};
-    char messagefromClient[BUFF_SIZE];
     char messageforClient[BUFF_SIZE];
 
  	if(2!=argc){
@@ -152,44 +144,15 @@ int main(int argc, char *argv[]){
 			 *
 			 * e.g. perform some action repond to client etc.
 			 */
-
+            pthread_t pthreadId;
+            pthread_create(&pthreadId,NULL,receivedMessagethreadListener,slaveSocket);
             for(;;){
-                /*
-                 * Need to add a loop that will prompt for message once carriage return is received by fgets
-                 */
-                if ((received = recv(slaveSocket,messagefromClient, BUFF_SIZE, 0)) == -1) {
-                    perror("Receiving of message from client error");
-                    exit(1);
-                }else if(received == 0){
-                    printf("Connection from cleint has been closed");
-                    break;
-                }
-                messagefromClient[received] = '\0';
-                printf("\nClient: %s", messagefromClient);
-                
-                /* 
-                 *This is for sending of message.
-                 */
-                printf("You: ");
                 fgets(messageforClient,BUFF_SIZE-1,stdin);
                 if ((send(slaveSocket, messageforClient, strlen(messageforClient),0))== -1){
                     fprintf(stderr, "Failure Sending Message\n");
-                    //close(slaveSocket);
                     break;
                 }
-                /*
-                 *printf("Server:Msg being sent: %s\nNumber of bytes sent: %d\n", messageforClient, strlen(messageforClient   ));
-                 */
             }
-			
-			 /*
-			  * End of code added
-			  *
-              *write(slaveSocket, MESSAGE, strlen(MESSAGE));
-              */
-			 close(slaveSocket);
-			 // exit(0);
-		/* Parent process */
 		default:
 			close(slaveSocket);
 	}
@@ -209,4 +172,18 @@ int _GetHostName(char *buffer, int length){
 		strncpy(buffer, sysname.nodename, length);
 	}	
 	return (status);
+}
+
+void *receivedMessagethreadListener(int *arg){
+    char messagefromClient[BUFF_SIZE]="";
+    int status = 0;
+    for (;;) {
+        status = recv((int)arg, messagefromClient, sizeof(messagefromClient),0);
+        if ( status <= 0 ){
+            printf("Either Connection Closed or Error\n");
+            break;
+        }
+        messagefromClient[status] = '\0';
+        printf("\nServer: %s", messagefromClient);
+    }
 }
