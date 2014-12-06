@@ -1,16 +1,22 @@
-#include <stdio.h> /* printf, sprintf */
-#include <stdlib.h> /* read, write, close */
-#include <string.h> /* memcpy, memset */
-#include <sys/socket.h> /* socket, connect */
-#include <netinet/in.h> /* struct sockaddr_in, struct sockaddr */
-#include <netdb.h> /* struct hostent, gethostbyname */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <pthread.h>
 
+#define BUFF_SIZE 1024
 /*
- char *host =        "www.google.com";
- char *message_fmt = "GET /search?upou HTTP/1.0\n\n";
+ char *host =        "google.com";
+ char *message_fmt = "GET /search?q=up+open+university HTTP/1.0\n\n";
  
- char *host =        "www.yahoo.com";
- char *message_fmt = "GET /search;_ylt=upou HTTP/1.0\n\n";
+ char *host =        "search.yahoo.com";
+ char *message_fmt = "GET //search?p=up+open+university HTTP/1.0\n\n";
  
  char *host =        "www.bing.com";
  char *message_fmt = "GET /search?q=upou HTTP/1.0\n\n";
@@ -28,74 +34,76 @@
  char *message_fmt = "GET /search?q=UP HTTP/1.0\n\n";
  */
 
-void error(const char *msg) { perror(msg); exit(0); }
+void *receivedMessagethreadListener(int *arg);
 
-int main(int argc,char *argv[])
-{
-    /* first what are we going to send and where are we going to send it? */
-    int portno =        80;
-    char *host =        "www.yahoo.com";
-    char *message_fmt = "GET /search;_ylt=upou HTTP/1.0\n\n";
-
-    struct hostent *server;
-    struct sockaddr_in serv_addr;
-    int sockfd, bytes, sent, received, total;
+int main(int argc, char *argv[]){
+    time_t start_t, end_t;
+    double diff_t;
+    
+	struct hostent *hostPtr=NULL;
+	struct sockaddr_in serverName = {0};
+	char *remoteHost=NULL;
+    int clientSocket, bytes, sent,total, status=0;
     char message[1024],response[4096];
+    
+    int remotePort =        80;
+    char *host =        "api.twitter.com";
+    char *message_fmt = "GET /1.1/search/tweets.json?q=freebandnames&since_id=24012619984051000&max_id=250126199840518145&result_type=mixed&count=4 HTTP/1.0\n\n";
+    
+    sprintf(message,message_fmt,"","");
+    printf("Request:\n%s\n",message);
 
-    /* fill in the parameters */
-    sprintf(message,message_fmt);
+	clientSocket=socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if(-1 == clientSocket){
+		perror("socket");
+		exit(1);
+	}
 
-    /* create the socket */
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) error("ERROR opening socket");
+	/*
+	 * need to resolve the remote server name or IP address
+	 */
 
-    /* lookup the ip address */
-    server = gethostbyname(host);
-    if (server == NULL) error("ERROR, no such host");
+	hostPtr = gethostbyname(host);
+	if(NULL == hostPtr){
+		hostPtr = gethostbyaddr(remoteHost,strlen(remoteHost),AF_INET);
+		if(NULL == hostPtr){
+			perror("Error resolving server address ");
+			exit(1);
+		}		
+	}
 
-    /* fill in the structure */
-    memset(&serv_addr,0,sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(portno);
-    memcpy(&serv_addr.sin_addr.s_addr,server->h_addr,server->h_length);
-
-    /* connect the socket */
-    if (connect(sockfd,(struct sockaddr *)&serv_addr,sizeof(serv_addr)) < 0)
-        error("ERROR connecting");
-
-    /* send the request */
+	serverName.sin_family=AF_INET;
+	serverName.sin_port=htons(remotePort);
+	(void)memcpy(&serverName.sin_addr, hostPtr->h_addr, hostPtr->h_length);
+	status = connect(clientSocket, (struct sockaddr*)&serverName, sizeof(serverName));
+	
+	if(-1 == status){
+		perror("connect");
+		exit(1);
+    }else{
+        printf("Connected to server\n");
+    }
     total = strlen(message);
     sent = 0;
     do {
-        bytes = write(sockfd,message+sent,total-sent);
+        bytes = write(clientSocket,message+sent,total-sent);
         if (bytes < 0)
-            error("ERROR writing message to socket");
+            perror("ERROR writing message to socket");
         if (bytes == 0)
             break;
         sent+=bytes;
     } while (sent < total);
+    time(&start_t);
 
-    /* receive the response */
     memset(response,0,sizeof(response));
-    total = sizeof(response)-1;
-    received = 0;
-    do {
-        bytes = read(sockfd,response-received,total-received);
-        if (bytes < 0)
-            error("ERROR reading response from socket");
-        if (bytes == 0)
-            break;
-        received+=bytes;
-    } while (received < total);
-
-    if (received == total)
-        error("ERROR storing complete response from socket");
-
-    /* close the socket */
-    close(sockfd);
-
-    /* process response */
-    printf("Response:\n%s\n",response);
-
-    return 0;
+    int count = 0;
+    while(0 < (status =  read(clientSocket, response, sizeof(response)-1))){
+        printf("\n***** %d %s count[%d] \n", status, response, count);
+        count++;
+    }
+    close(clientSocket);
+    time(&end_t);
+    diff_t = difftime(end_t, start_t);
+    printf("\n Execution time = %f\n", diff_t);
+	return 0;
 }
