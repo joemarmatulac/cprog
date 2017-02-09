@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
 	/*
 	 * Allowed server be contactable on any of its IP addresses.
 	 */
-	 serverName.sin_addr.s_addr = htonl(INADR_ANY);
+	 serverName.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	serverName.sin_family=AF_INET;
 	serverName.sin_port=htons(port);
